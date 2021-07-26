@@ -2,6 +2,7 @@
 # https://github.com/SnoyIatK/macOS-Simple-KVM.git
 
 RUN_USER=$USER
+KVM_IMG_URL=${KVM_IMG_URL:-"https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/*"}
 # RUN_USER=vmadmin
 
 ####################################################################
@@ -34,13 +35,13 @@ sudo ip link set tap0 up promisc on
 sudo ip link set dev virbr0 up
 sudo ip link set dev tap0 master virbr0
 
-sudo mkdir /mnt/dev
-sudo chown -R $RUN_USER:$RUN_USER /mnt/dev
+sudo mkdir /mnt/resource
+sudo chown -R $RUN_USER:$RUN_USER /mnt/resource
 
 
 # ####################################################################
-# git clone --depth 1 https://github.com/kholia/OSX-KVM.git /mnt/dev/OSX-KVM
-# cd /mnt/dev/OSX-KVM
+# git clone --depth 1 https://github.com/kholia/OSX-KVM.git /mnt/resource/OSX-KVM
+# cd /mnt/resource/OSX-KVM
 # sudo cp kvm.conf /etc/modprobe.d/kvm.conf
 # sudo apt install python -y
 # qemu-img convert BaseSystem.dmg -O raw BaseSystem.img
@@ -49,8 +50,8 @@ sudo chown -R $RUN_USER:$RUN_USER /mnt/dev
 
 
 # ####################################################################
-# git clone https://github.com/foxlet/macOS-Simple-KVM.git /mnt/dev/macOS-Simple-KVM
-# cd /mnt/dev/macOS-Simple-KVM
+# git clone https://github.com/foxlet/macOS-Simple-KVM.git /mnt/resource/macOS-Simple-KVM
+# cd /mnt/resource/macOS-Simple-KVM
 # ./jumpstart.sh --catalina
 # qemu-img create -f qcow2 MacOS_Disk.qcow2 128G
 # echo >> basic.sh
@@ -66,14 +67,14 @@ git -C $SRC pull
 ln -s $SRC/devcontainer-init.sh $HOME/devcontainer-init.sh
 
 # /mnt is temporary disk
-mkdir /mnt/dev/macOS-Simple-KVM
-cp -r $SRC/firmware /mnt/dev/macOS-Simple-KVM/
+mkdir /mnt/resource/macOS-Simple-KVM
+cp -r $SRC/firmware /mnt/resource/macOS-Simple-KVM/
 # Download (azcopy sync sometimes fails with 401?)
-/usr/local/bin/azcopy copy "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/*" "/mnt/dev/macOS-Simple-KVM/" --recursive
+/usr/local/bin/azcopy copy "$KVM_IMG_URL" "/mnt/resource/macOS-Simple-KVM/" --recursive
 # Upload
-# /usr/local/bin/azcopy copy "/mnt/dev/macOS-Simple-KVM/*" "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/" --exclude-path=".git;.github;.gitignore;.gitmodules" --recursive
+# /usr/local/bin/azcopy copy "/mnt/resource/macOS-Simple-KVM/*" "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/" --exclude-path=".git;.github;.gitignore;.gitmodules" --recursive
 
-# /usr/local/bin/azcopy sync "/mnt/dev/macOS-Simple-KVM" "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/" --exclude-path=".git;.github;.gitignore;.gitmodules" --recursive --delete-destination true
+# /usr/local/bin/azcopy sync "/mnt/resource/macOS-Simple-KVM" "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/" --exclude-path=".git;.github;.gitignore;.gitmodules" --recursive --delete-destination true
 
 # sudo ip link delete tap0
 virsh define $SRC/macOS-KVM.xml
