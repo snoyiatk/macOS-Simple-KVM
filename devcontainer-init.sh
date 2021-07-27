@@ -23,6 +23,7 @@ sudo usermod -aG kvm,tty $USER
 # Login using managed identity
 wget -O azcopy_v10.tar.gz https://aka.ms/downloadazcopy-v10-linux && tar -xf azcopy_v10.tar.gz --strip-components=1
 sudo cp azcopy /usr/local/bin/
+sudo chmod +x /usr/local/bin/azcopy
 /usr/local/bin/azcopy login --identity
 
 
@@ -67,7 +68,7 @@ git -C $SRC pull
 ln -s $SRC/devcontainer-init.sh $HOME/devcontainer-init.sh
 
 # /mnt is temporary disk
-mkdir /mnt/resource/macOS-Simple-KVM
+mkdir /mnt/resource/macOS-Simple-KVM -p
 cp -r $SRC/firmware /mnt/resource/macOS-Simple-KVM/
 # Download (azcopy sync sometimes fails with 401?)
 /usr/local/bin/azcopy copy "$KVM_IMG_URL" "/mnt/resource/macOS-Simple-KVM/" --recursive
@@ -77,6 +78,6 @@ cp -r $SRC/firmware /mnt/resource/macOS-Simple-KVM/
 # /usr/local/bin/azcopy sync "/mnt/resource/macOS-Simple-KVM" "https://cuongdevcontainersa.blob.core.windows.net/macos/full/disk/" --exclude-path=".git;.github;.gitignore;.gitmodules" --recursive --delete-destination true
 
 # sudo ip link delete tap0
-virsh define $SRC/macOS-KVM.xml
-virsh start macOS-KVM
+sudo virsh --connect qemu:///system define $SRC/macOS-KVM.xml
+sudo virsh --connect qemu:///system start macOS-KVM
 # sudo virsh start macOS-KVM #sudo required for tun/tap
